@@ -2,6 +2,8 @@ package com.example.leagues.service;
 
 import com.example.leagues.dto.LeagueDTO;
 import com.example.leagues.mapper.LeagueMapper;
+import com.example.leagues.repository.CountryRepository;
+import com.example.leagues.repository.SportRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.example.leagues.repository.LeagueRepository;
@@ -13,11 +15,16 @@ import java.util.stream.Collectors;
 @Service
 public class LeagueService {
 
+
+    private  final CountryRepository countryRepository;
+    private final SportRepository sportRepository;
     private final LeagueRepository leagueRepository;
 
     @Autowired
-    public LeagueService(LeagueRepository leagueRepository) {
+    public LeagueService(LeagueRepository leagueRepository, CountryRepository countryRepository, SportRepository sportRepository) {
         this.leagueRepository = leagueRepository;
+        this.countryRepository = countryRepository;
+        this.sportRepository = sportRepository;
     }
 
     public List<LeagueDTO> getCountries() {
@@ -43,6 +50,13 @@ public class LeagueService {
 
     public void deleteLeague(Long id) {
         leagueRepository.deleteById(id);
+    }
+
+    public LeagueDTO save(LeagueDTO leagueDTO) {
+        League league = LeagueMapper.toEntity(leagueDTO);
+        league.setCountry(countryRepository.findById(leagueDTO.getCountryId()).orElse(null));
+        league.setSport(sportRepository.findById(leagueDTO.getSportId()).orElse(null));
+        return LeagueMapper.toDTO(leagueRepository.save(league));
     }
 
 }
